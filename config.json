@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0.0",
+  "directoryName": "wiltondb",
+  "msiFileName": "wiltondb",
+  "featureName": "wiltondb",
+  "serviceName": "wiltondb",
+  "serviceDisplayName": "Wilton DB",
+  "serviceDescription": "Wilton DB",
+  "helpLink": "https://wiltondb.com",
+  "manufacturer": "WiltonDB Software",
+  "productName": "Wilton DB",
+  "upgradeCode": "e77fdb8f-d9a8-4418-8f59-25f94678ba75"
+}
