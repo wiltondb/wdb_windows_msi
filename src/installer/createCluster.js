@@ -6,19 +6,17 @@ async function updateConfFile(dataDir) {
   const contents = await Deno.readTextFile(confFile);
   const lines = contents.split("\r\n");
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith("#shared_preload_libraries")) {
+    const ln = lines[i];
+    if (ln.startsWith("#shared_preload_libraries")) {
       lines[i] = "shared_preload_libraries = 'babelfishpg_tds'";
-    } else if (lines[i].startsWith("#logging_collector = off")) {
-      lines[i] = lines[i].replace(
-        "#logging_collector = off",
-        "logging_collector = on",
-      );
-    } else if (lines[i].startsWith("#log_directory")) {
-      lines[i] = lines[i].replace("#log_directory", "log_directory");
-    } else if (lines[i].startsWith("#log_filename")) {
-      lines[i] = lines[i].replace("#log_filename", "log_filename");
-    } else if (lines[i].startsWith("#log_rotation_age")) {
-      lines[i] = lines[i].replace("#log_rotation_age", "log_rotation_age");
+    } else if (ln.startsWith("#logging_collector = off")) {
+      lines[i] = ln.replace("#logging_collector = off", "logging_collector = on");
+    } else if (ln.startsWith("#log_directory")) {
+      lines[i] = ln.replace("#log_directory", "log_directory");
+    } else if (ln.startsWith("#log_filename")) {
+      lines[i] = ln.replace("#log_filename", "log_filename");
+    } else if (ln.startsWith("#log_rotation_age")) {
+      lines[i] = ln.replace("#log_rotation_age", "log_rotation_age");
     }
   }
   const updated = lines.join("\r\n");
@@ -30,8 +28,11 @@ async function updateHbaFile(dataDir) {
   const contents = await Deno.readTextFile(hbaFile);
   const lines = contents.split("\r\n");
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith("host") && lines[i].endsWith("trust")) {
-      lines[i] = lines[i].replace("trust", "md5");
+    const ln = lines[i];
+    if (ln.startsWith("host") && ln.endsWith("trust") && !ln.includes("replication")) {
+      lines[i] = ln.replace("trust", "md5")
+          .replace("127.0.0.1/32", "0.0.0.0/0")
+          .replace("::1/128", "::/0");
     }
   }
   const updated = lines.join("\r\n");
@@ -42,7 +43,7 @@ async function runCmd(cmd, bestEffort) {
   console.log(cmd.join(" "));
   const ps = await Deno.run({ cmd }).status();
   if (!bestEffort && 0 !== ps.code) {
-    console.log(`ERROR: status code: [${code}]`);
+    console.log(`ERROR: status code: [${ps.code}]`);
     Deno.exit(1);
   }
 }

@@ -16,5 +16,10 @@ export default () => {
       Id: "ARPPRODUCTICON",
       Value: "icon.exe",
     },
+  }, {
+    _attributes: {
+      Id: "MSIRESTARTMANAGERCONTROL",
+      Value: "Disable",
+    },
   }];
 };
