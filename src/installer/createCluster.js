@@ -31,11 +31,12 @@ async function updateHbaFile(dataDir) {
   const contents = await Deno.readTextFile(hbaFile);
   const lines = contents.split("\r\n");
   for (let i = 0; i < lines.length; i++) {
-    const ln = lines[i];
-    if (ln.startsWith("host") && ln.endsWith("trust") && !ln.includes("replication")) {
-      lines[i] = ln.replace("trust", "md5")
-          .replace("127.0.0.1/32", "0.0.0.0/0")
-          .replace("::1/128", "::/0");
+    if (!lines[i].startsWith("#") && lines[i].endsWith("trust")) {
+      lines[i] = lines[i].replace("trust", "md5")
+    }
+    if (lines[i].startsWith("host") && !lines[i].includes("replication")) {
+      lines[i] = lines[i].replace("127.0.0.1/32", "0.0.0.0/0")
+          .replace("::1/128", "::0/0");
     }
   }
   const updated = lines.join("\r\n");
