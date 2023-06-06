@@ -18,6 +18,21 @@ export default {
         Execute: "deferred",
         Impersonate: "no",
       },
+    }, {
+      _attributes: {
+        Id: "sanity_check_immediate",
+        Property: "sanity_check_deferred",
+        Value: "&quot;[INSTALLDIR]bin\\postgres.exe&quot; --version",
+      },
+    }, {
+      _attributes: {
+        Id: "sanity_check_deferred",
+        BinaryKey: "WixCA",
+        DllEntry: "WixQuietExec",
+        Return: "check",
+        Execute: "deferred",
+        Impersonate: "no",
+      },
     }];
   },
 
@@ -35,6 +50,18 @@ export default {
           Before: "InstallFinalize",
         },
         _cdata: "REMOVE AND (NOT UPGRADINGPRODUCTCODE)",
+      }, {
+        _attributes: {
+          Action: "sanity_check_immediate",
+          Before: "InstallInitialize",
+        },
+        _cdata: "NOT REMOVE",
+      }, {
+        _attributes: {
+          Action: "sanity_check_deferred",
+          Before: "InstallServices",
+        },
+        _cdata: "NOT REMOVE",
       }],
     };
   },

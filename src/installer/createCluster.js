@@ -17,6 +17,9 @@ async function updateConfFile(dataDir) {
       lines[i] = ln.replace("#log_filename", "log_filename");
     } else if (ln.startsWith("#log_rotation_age")) {
       lines[i] = ln.replace("#log_rotation_age", "log_rotation_age");
+    } else if (ln.startsWith("#ssl = off")) {
+      lines[i] = ln.replace("#ssl", "ssl")
+          .replace("off", "on");
     }
   }
   const updated = lines.join("\r\n");
@@ -54,6 +57,8 @@ export default async (bundleDir) => {
   const initdbExe = path.join(bundleDir, "bin", "initdb.exe");
   const pgctlExe = path.join(bundleDir, "bin", "pg_ctl.exe");
   const psqlExe = path.join(bundleDir, "bin", "psql.exe");
+  const opensslExe = path.join(bundleDir, "bin", "openssl.exe");
+  const opensslCnf = path.join(bundleDir, "share", "openssl.cnf");
   const user = Deno.env.get("USERNAME");
 
   const filePath = path.fromFileUrl(import.meta.url);
@@ -63,8 +68,12 @@ export default async (bundleDir) => {
 
   const dataDir = path.join(bundleDir, "data");
   await fs.emptyDir(dataDir);
+  const serverCrt = path.join(dataDir, "server.crt");
+  const serverKey = path.join(dataDir, "server.key");
 
-  await runCmd([initdbExe, "-D", dataDir, "-E", "UTF8", "--locale", "en_US.UTF-8"]);
+  await runCmd([initdbExe, "-D", dataDir, "-E", "UTF8", "--locale", "C"]);
+  await runCmd([opensslExe, "req", "-config", opensslCnf, "-new", "-x509", "-days", "3650", 
+      "-nodes", "-text", "-out", serverCrt, "-keyout", serverKey, "-subj", "/CN=localhost"]);
   await updateConfFile(dataDir);
   await fs.emptyDir(path.join(dataDir, "log"));
   await runCmd([pgctlExe, "start", "-D", dataDir]);
