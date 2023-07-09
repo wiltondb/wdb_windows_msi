@@ -6,15 +6,20 @@ import createCustomActions from "./createCustomActions.js";
 import createProperty from "./createProperty.js";
 import createWixVariable from "./createWixVariable.js";
 
+function xmlnsAttrs() {
+  const res = {};
+  res["xmlns"] = "http://schemas.microsoft.com/wix/2006/wi";
+  res["xmlns:util"] = "http://schemas.microsoft.com/wix/UtilExtension";
+  return res;
+}
+
 export default async (distDir) => {
   const filePath = path.fromFileUrl(import.meta.url);
   const rootDir = path.dirname(path.dirname(path.dirname(filePath)));
   const dirEl = await createDirectory(distDir);
   return {
     Wix: {
-      _attributes: {
-        xmlns: "http://schemas.microsoft.com/wix/2006/wi",
-      },
+      _attributes: xmlnsAttrs(),
       Product: {
         _attributes: {
           Id: crypto.randomUUID(),

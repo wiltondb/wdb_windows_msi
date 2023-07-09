@@ -8,8 +8,29 @@ function addService(compEl) {
   compEl.ServiceControl = createService.control();
 }
 
+function createFolderWithPermission() {
+  const res = {};
+  res["util:PermissionEx"] = {
+    _attributes: {
+      GenericAll: "yes",
+      User: "LocalService",
+    },
+  };
+  return res;
+}
+
 async function processDirRecursive(dirPath, dirEl) {
   const children = [...Deno.readDirSync(dirPath)];
+  if("data" === path.basename(dirPath) && children.map(ch => ch.name).includes("postgresql.conf")) {
+    dirEl.Component.push({
+      _attributes: {
+        Id: genId(),
+        Guid: crypto.randomUUID(),
+        Win64: "yes",
+      },
+      CreateFolder: createFolderWithPermission(),
+    });
+  }
   for (const ch of children) {
     const chPath = path.join(dirPath, ch.name);
     if (ch.isDirectory) {

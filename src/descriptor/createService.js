@@ -12,7 +12,7 @@ export default {
         DisplayName: conf.serviceDisplayName,
         Description: conf.serviceDescription,
         Start: "auto",
-        Account: "LocalSystem",
+        Account: "NT AUTHORITY\\LocalService",
         ErrorControl: "ignore",
         Interactive: "no",
         Arguments: "runservice" +

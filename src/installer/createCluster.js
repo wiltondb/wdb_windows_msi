@@ -20,6 +20,8 @@ async function updateConfFile(dataDir) {
     } else if (ln.startsWith("#ssl = off")) {
       lines[i] = ln.replace("#ssl", "ssl")
           .replace("off", "on");
+    } else if (ln.startsWith("max_connections = 100")) {
+      lines[i] = ln.replace("100", "256")
     }
   }
   const updated = lines.join("\r\n");
@@ -60,7 +62,7 @@ export default async (bundleDir) => {
   const psqlExe = path.join(bundleDir, "bin", "psql.exe");
   const opensslExe = path.join(bundleDir, "bin", "openssl.exe");
   const opensslCnf = path.join(bundleDir, "share", "openssl.cnf");
-  const user = Deno.env.get("USERNAME");
+  //const user = Deno.env.get("USERNAME");
 
   const filePath = path.fromFileUrl(import.meta.url);
   const rootDir = path.dirname(path.dirname(path.dirname(filePath)));
@@ -72,14 +74,14 @@ export default async (bundleDir) => {
   const serverCrt = path.join(dataDir, "server.crt");
   const serverKey = path.join(dataDir, "server.key");
 
-  await runCmd([initdbExe, "-D", dataDir, "-E", "UTF8", "--locale", "C"]);
+  await runCmd([initdbExe,"-D", dataDir, "-U", "postgres", "-E", "UTF8", "--no-locale"]);
   await runCmd([opensslExe, "req", "-config", opensslCnf, "-new", "-x509", "-days", "3650", 
       "-nodes", "-text", "-out", serverCrt, "-keyout", serverKey, "-subj", "/CN=localhost"]);
   await updateConfFile(dataDir);
   await fs.emptyDir(path.join(dataDir, "log"));
   await runCmd([pgctlExe, "start", "-D", dataDir]);
-  await runCmd([psqlExe, "-U", user, "-d", "postgres", "-f", init1Sql]);
-  await runCmd([psqlExe, "-U", user, "-d", "wilton", "-f", init2Sql]);
+  await runCmd([psqlExe, "-U", "postgres", "-d", "postgres", "-f", init1Sql]);
+  await runCmd([psqlExe, "-U", "postgres", "-d", "wilton", "-f", init2Sql]);
   await updateHbaFile(dataDir);
   await runCmd([pgctlExe, "stop", "-D", dataDir]);
   await fs.emptyDir(path.join(dataDir, "log"));

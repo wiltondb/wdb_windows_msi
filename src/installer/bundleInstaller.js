@@ -10,6 +10,8 @@ export default async (wixDir, descriptor) => {
       "-nologo",
       "-arch",
       "x64",
+      "-ext",
+      "WixUtilExtension",
       "-o",
       `${name}.wixobj`,
       descriptor,
