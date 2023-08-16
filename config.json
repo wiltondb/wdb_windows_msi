@@ -3,7 +3,7 @@
   "directoryName": "wiltondb",
   "msiFileName": "wiltondb",
   "featureName": "wiltondb",
-  "serviceName": "wiltondb",
+  "serviceName": "wiltondb_320",
   "serviceDisplayName": "Wilton DB",
   "serviceDescription": "Wilton DB",
   "helpLink": "https://wiltondb.com",
