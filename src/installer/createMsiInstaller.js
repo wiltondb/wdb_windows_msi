@@ -1,8 +1,8 @@
 import { fs } from "../deps.js";
 import bundleInstaller from "./bundleInstaller.js";
-import fetchBinaries from "./fetchBinaries.js";
 import copyDist from "./copyDist.js";
 import createCluster from "./createCluster.js";
+import createClusterPs from "./createClusterPs.js";
 import prepareWorkDir from "./prepareWorkDir.js";
 import writeDescriptor from "./writeDescriptor.js";
 
@@ -23,14 +23,12 @@ export default async (distDir) => {
   // prepare work dir
   const workDir = await prepareWorkDir();
 
-  // build native part
-  await fetchBinaries();
-
   // copy dist
   const bundleDir = await copyDist(distDir, workDir);
 
   // create cluster
-  await createCluster(bundleDir);
+  //await createCluster(bundleDir);
+  await createClusterPs(bundleDir);
 
   // create descriptor
   const descriptor = await writeDescriptor(workDir, bundleDir);

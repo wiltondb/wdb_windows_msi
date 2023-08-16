@@ -36,6 +36,21 @@ export default {
     }];
   },
 
+  /*
+        _attributes: {
+          Action: "installdir_data_check_immediate",
+          Before: "InstallInitialize",
+        },
+        _cdata: "(NOT Installed) AND (NOT REMOVE)",
+      }, {
+        _attributes: {
+          Action: "installdir_data_check_deferred",
+          After: "InstallInitialize",
+        },
+        _cdata: "(NOT Installed) AND (NOT REMOVE)",
+      }, {
+  */
+
   executeSequence() {
     return {
       Custom: [{
