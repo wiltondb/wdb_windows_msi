@@ -4,29 +4,17 @@ export default {
   actions() {
     return [{
       _attributes: {
-        Id: "uninstall_cleanup_immediate",
-        Property: "uninstall_cleanup_deferred",
-        Value: "&quot;[SystemFolder]cmd.exe&quot; /c" +
-          " rd /s /q &quot;[INSTALLDIR]&quot;",
+        Id: "create_cluster_immediate",
+        Property: "create_cluster_deferred",
+        Value: "&quot;[System64Folder]WindowsPowerShell\\v1.0\\powershell.exe&quot;" +
+          " -NoLogo -NoProfile -NonInteractive" +
+          " -ExecutionPolicy Bypass" +
+          " -File &quot;[INSTALLDIR]share\\installer\\create_cluster.ps1&quot;" +
+          " &quot;[INSTALLDIR]&quot;"
       },
     }, {
       _attributes: {
-        Id: "uninstall_cleanup_deferred",
-        BinaryKey: "WixCA",
-        DllEntry: "WixQuietExec",
-        Return: "ignore",
-        Execute: "deferred",
-        Impersonate: "no",
-      },
-    }, {
-      _attributes: {
-        Id: "sanity_check_immediate",
-        Property: "sanity_check_deferred",
-        Value: "&quot;[INSTALLDIR]bin\\postgres.exe&quot; --version",
-      },
-    }, {
-      _attributes: {
-        Id: "sanity_check_deferred",
+        Id: "create_cluster_deferred",
         BinaryKey: "WixCA",
         DllEntry: "WixQuietExec",
         Return: "check",
@@ -36,47 +24,20 @@ export default {
     }];
   },
 
-  /*
-        _attributes: {
-          Action: "installdir_data_check_immediate",
-          Before: "InstallInitialize",
-        },
-        _cdata: "(NOT Installed) AND (NOT REMOVE)",
-      }, {
-        _attributes: {
-          Action: "installdir_data_check_deferred",
-          After: "InstallInitialize",
-        },
-        _cdata: "(NOT Installed) AND (NOT REMOVE)",
-      }, {
-  */
-
   executeSequence() {
     return {
       Custom: [{
         _attributes: {
-          Action: "uninstall_cleanup_immediate",
+          Action: "create_cluster_immediate",
           Before: "InstallInitialize",
         },
-        _cdata: "REMOVE AND (NOT UPGRADINGPRODUCTCODE)",
+        _cdata: "(NOT Installed) AND (NOT REMOVE)",
       }, {
         _attributes: {
-          Action: "uninstall_cleanup_deferred",
-          Before: "InstallFinalize",
-        },
-        _cdata: "REMOVE AND (NOT UPGRADINGPRODUCTCODE)",
-      }, {
-        _attributes: {
-          Action: "sanity_check_immediate",
-          Before: "InstallInitialize",
-        },
-        _cdata: "NOT REMOVE",
-      }, {
-        _attributes: {
-          Action: "sanity_check_deferred",
+          Action: "create_cluster_deferred",
           Before: "InstallServices",
         },
-        _cdata: "NOT REMOVE",
+        _cdata: "(NOT Installed) AND (NOT REMOVE)",
       }],
     };
   },

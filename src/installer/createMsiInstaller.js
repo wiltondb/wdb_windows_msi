@@ -28,7 +28,7 @@ export default async (distDir) => {
 
   // create cluster
   //await createCluster(bundleDir);
-  await createClusterPs(bundleDir);
+  //await createClusterPs(bundleDir);
 
   // create descriptor
   const descriptor = await writeDescriptor(workDir, bundleDir);
