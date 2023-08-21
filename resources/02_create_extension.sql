@@ -1,5 +1,4 @@
 
-SET allow_system_table_mods = ON;
 CREATE EXTENSION IF NOT EXISTS babelfishpg_tds CASCADE;
 GRANT ALL ON SCHEMA sys to wilton;
 ALTER SYSTEM SET babelfishpg_tsql.database_name = 'wilton';

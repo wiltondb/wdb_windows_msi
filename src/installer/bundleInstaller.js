@@ -3,6 +3,8 @@ import { path } from "../deps.js";
 export default async (wixDir, descriptor) => {
   console.log("Bundling installer ...");
   const name = descriptor.substring(0, descriptor.length - 4);
+  const filePath = path.fromFileUrl(import.meta.url);
+  const rootDir = path.dirname(path.dirname(path.dirname(filePath)));
 
   const codeCandle = await Deno.run({
     cmd: [
@@ -33,6 +35,8 @@ export default async (wixDir, descriptor) => {
       "WixUtilExtension",
       "-sval",
       "-cultures:en-US",
+      "-loc",
+      path.join(rootDir, "resources", "messages.wxl"),
       "-o",
       `${name}.msi`,
       `${name}.wixobj`,

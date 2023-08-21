@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="FatalErrorDescription1">[ProductName] Setup Wizard ended prematurely because of an error. Your system has not been modified. See the Application log in the Windows Event Viewer for details about the error.</String>
+</WixLocalization>

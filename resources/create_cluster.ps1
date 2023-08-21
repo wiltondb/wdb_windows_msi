@@ -91,7 +91,7 @@ try {
   $F02CreateExtension = Join-Path -Path $ScriptDir -ChildPath "02_create_extension.sql"
 
   New-DirWilton -Dir $DataDir
-  Invoke-CommandWilton -Exe $InitdbExe -Args @("-D", $DataDir, "-U", "postgres", "-E", "UTF8", "--no-locale")
+  Invoke-CommandWilton -Exe $InitdbExe -Args @("-D", $DataDir, "-U", "postgres", "-E", "UTF8", "--no-locale", "--no-instructions")
   Invoke-CommandWilton -Exe $OpensslExe -Args @("req", "-config", $OpensslCnf, "-new", "-x509", "-days", "3650",
     "-nodes", "-text", "-out", $ServerCrt, "-keyout", $ServerKey, "-subj", "/CN=localhost")
   New-DirWilton -Dir $LogDir
