@@ -28,7 +28,8 @@ function Invoke-CommandWilton {
   param (
     [Parameter(Mandatory=$True)][string]$Exe,
     [Parameter(Mandatory=$True)][string[]]$Args,
-    [Parameter(Mandatory=$False)][switch]$NoRedirect
+    [Parameter(Mandatory=$False)][switch]$NoRedirect,
+    [Parameter(Mandatory=$False)][switch]$BestEffort
   )
   Write-Host $Exe $Args
   if (-Not ($NoRedirect)) {
@@ -48,7 +49,7 @@ function Invoke-CommandWilton {
   if (-Not ($NoRedirect)) {
     Write-Host $Output
   }
-  if($LASTEXITCODE -ne 0) {
+  if(-Not ($BestEffort) -And ($LASTEXITCODE -ne 0)) {
     throw $Message
   } 
 }
@@ -72,30 +73,33 @@ function Update-HbaConfWilton {
   Write-Host "Updated $PgHbaConf"
 }
 
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$InstallDir = $InstallDir -Replace "`"", ""
+$BinDir = Join-Path -Path $InstallDir -ChildPath "bin"
+$DataDir = Join-Path -Path $InstallDir -ChildPath "data"
+$LogDir = Join-Path -Path $DataDir -ChildPath "log"
+$ShareDir = Join-Path -Path $InstallDir -ChildPath "share"
+
+$InitdbExe = Join-Path -Path $BinDir -ChildPath "initdb.exe"
+$PgctlExe = Join-Path -Path $BinDir -ChildPath "pg_ctl.exe"
+$PsqlExe = Join-Path -Path $BinDir -ChildPath "psql.exe"
+$OpensslExe = Join-Path -Path $BinDir -ChildPath "openssl.exe"
+$OpensslCnf = Join-Path -Path $ShareDir -ChildPath "openssl.cnf"
+$ServerCrt = Join-Path -Path $DataDir -ChildPath "server.crt"
+$ServerKey = Join-Path -Path $DataDir -ChildPath "server.key"
+$F01AlterSystemCreateDbSql = Join-Path -Path $ScriptDir -ChildPath "01_alter_system_create_db.sql"
+$F02CreateExtension = Join-Path -Path $ScriptDir -ChildPath "02_create_extension.sql"
+
+$PgCtlWasStarted = $False
+
 try {
-  $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-  $InstallDir = $InstallDir -Replace "`"", ""
-  $BinDir = Join-Path -Path $InstallDir -ChildPath "bin"
-  $DataDir = Join-Path -Path $InstallDir -ChildPath "data"
-  $LogDir = Join-Path -Path $DataDir -ChildPath "log"
-  $ShareDir = Join-Path -Path $InstallDir -ChildPath "share"
-
-  $InitdbExe = Join-Path -Path $BinDir -ChildPath "initdb.exe"
-  $PgctlExe = Join-Path -Path $BinDir -ChildPath "pg_ctl.exe"
-  $PsqlExe = Join-Path -Path $BinDir -ChildPath "psql.exe"
-  $OpensslExe = Join-Path -Path $BinDir -ChildPath "openssl.exe"
-  $OpensslCnf = Join-Path -Path $ShareDir -ChildPath "openssl.cnf"
-  $ServerCrt = Join-Path -Path $DataDir -ChildPath "server.crt"
-  $ServerKey = Join-Path -Path $DataDir -ChildPath "server.key"
-  $F01AlterSystemCreateDbSql = Join-Path -Path $ScriptDir -ChildPath "01_alter_system_create_db.sql"
-  $F02CreateExtension = Join-Path -Path $ScriptDir -ChildPath "02_create_extension.sql"
-
   New-DirWilton -Dir $DataDir
   Invoke-CommandWilton -Exe $InitdbExe -Args @("-D", $DataDir, "-U", "postgres", "-E", "UTF8", "--no-locale", "--no-instructions")
   Invoke-CommandWilton -Exe $OpensslExe -Args @("req", "-config", $OpensslCnf, "-new", "-x509", "-days", "3650",
-    "-nodes", "-text", "-out", $ServerCrt, "-keyout", $ServerKey, "-subj", "/CN=localhost")
+    "-noenc", "-text", "-batch", "-out", $ServerCrt, "-keyout", $ServerKey, "-subj", "/CN=localhost")
   New-DirWilton -Dir $LogDir
   Invoke-CommandWilton -Exe $PgctlExe -Args @("start", "-D", $DataDir) -NoRedirect
+  $PgCtlWasStarted = $True
   Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "postgres", "-f", $F01AlterSystemCreateDbSql)
   Invoke-CommandWilton -Exe $PgctlExe -Args @("restart", "-D", $DataDir) -NoRedirect
   Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "wilton", "-f", $F02CreateExtension)
@@ -106,5 +110,8 @@ try {
 } catch {
   Write-EventLogWilton -EntryType "Error" -Message $_
   Write-Host $_
+  if ($PgCtlWasStarted) {
+    Invoke-CommandWilton -Exe $PgctlExe -Args @("stop", "-D", $DataDir) -NoRedirect -BestEffort
+  }
   exit 1
 }
