@@ -3,6 +3,7 @@ import conf from "../conf.js";
 import createDirectory from "./createDirectory.js";
 import createFeature from "./createFeature.js";
 import createCustomActions from "./createCustomActions.js";
+import createPostInstallUI from "./createPostInstallUI.js";
 import createProperty from "./createProperty.js";
 import createWixVariable from "./createWixVariable.js";
 
@@ -61,6 +62,7 @@ export default async (distDir) => {
             Id: "WixUI_ErrorProgressText",
           },
         }],
+        UI: createPostInstallUI(),
         Icon: {
           _attributes: {
             Id: "icon.exe",

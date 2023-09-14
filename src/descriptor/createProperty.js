@@ -21,5 +21,15 @@ export default () => {
       Id: "MSIRESTARTMANAGERCONTROL",
       Value: "Disable",
     },
+  }, {
+    _attributes: {
+      Id: "WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT",
+      Value: "Launch WiltonDB Configuration Tool",
+    },
+  }, {
+    _attributes: {
+      Id: "WIXUI_EXITDIALOGOPTIONALCHECKBOX",
+      Value: "1",
+    },
   }];
 };

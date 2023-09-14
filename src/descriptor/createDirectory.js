@@ -46,6 +46,10 @@ async function processDirRecursive(dirPath, dirEl) {
         const compEl = dirEl.Component[dirEl.Component.length - 1];
         addService(compEl);
       }
+      if ("wdb_config.exe" === ch.name) {
+        const compEl = dirEl.Component[dirEl.Component.length - 1];
+        compEl.File._attributes.Id = "WDB_CONFIG_EXE_ID";
+      }
     }
   }
   if (0 === children.length) {

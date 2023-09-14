@@ -21,6 +21,14 @@ export default {
         Execute: "deferred",
         Impersonate: "no",
       },
+    }, {
+      _attributes: {
+        Id: "postinstall",
+        FileKey: "WDB_CONFIG_EXE_ID",
+        Return: "asyncNoWait",
+        Impersonate: "yes",
+        ExeCommand: "--postinstall",
+      },
     }];
   },
 
