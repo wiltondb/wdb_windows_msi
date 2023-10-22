@@ -1,9 +1,9 @@
 {
-  "version": "3.2.0.0",
-  "directoryName": "wiltondb",
-  "msiFileName": "wiltondb",
+  "version": "2.4.2",
+  "directoryName": "wiltondb3.3",
+  "msiFileName": "wiltondb3.3",
   "featureName": "wiltondb",
-  "serviceName": "wiltondb_320",
+  "serviceName": "wiltondb3.3",
   "serviceDisplayName": "Wilton DB",
   "serviceDescription": "Wilton DB",
   "helpLink": "https://wiltondb.com",

@@ -68,7 +68,7 @@ export default async (distDir) => {
   const installDirEl = {
     _attributes: {
       Id: "INSTALLDIR",
-      Name: `${conf.directoryName}-${conf.version}`,
+      Name: `${conf.directoryName}`,
     },
     Directory: [],
     Component: [],

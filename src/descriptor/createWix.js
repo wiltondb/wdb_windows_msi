@@ -29,7 +29,7 @@ export default async (distDir) => {
           Manufacturer: conf.manufacturer,
           Name: conf.productName,
           UpgradeCode: conf.upgradeCode,
-          Version: conf.version,
+          Version: `${conf.version}.0`,
         },
         Package: {
           _attributes: {

@@ -93,6 +93,7 @@ $F02CreateExtension = Join-Path -Path $ScriptDir -ChildPath "02_create_extension
 $PgCtlWasStarted = $False
 
 try {
+  # todo: optional initdb, write and check version file
   New-DirWilton -Dir $DataDir
   Invoke-CommandWilton -Exe $InitdbExe -Args @("-D", $DataDir, "-U", "postgres", "-E", "UTF8", "--no-locale", "--no-instructions")
   Invoke-CommandWilton -Exe $OpensslExe -Args @("req", "-config", $OpensslCnf, "-new", "-x509", "-days", "3650",
