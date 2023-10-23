@@ -19,9 +19,9 @@ export default async (distDir, workDir) => {
 
   const installerDir = path.join(bundleDir, "share", "installer");
   await fs.emptyDir(installerDir);
-  await fs.copy(join(resourcesDir, "create_cluster.ps1"), join(installerDir, "create_cluster.ps1"));
-  await fs.copy(join(resourcesDir, "01_alter_system_create_db.sql"), join(installerDir, "01_alter_system_create_db.sql"));
-  await fs.copy(join(resourcesDir, "02_create_extension.sql"), join(installerDir, "02_create_extension.sql"));
+  await fs.copy(join(resourcesDir, "wiltondb-setup.ps1"), join(installerDir, "wiltondb-setup.ps1"));
+  await fs.copy(join(resourcesDir, "wiltondb-setup-01.sql"), join(installerDir, "wiltondb-setup-01.sql"));
+  await fs.copy(join(resourcesDir, "wiltondb-setup-02.sql"), join(installerDir, "wiltondb-setup-02.sql"));
 
   return bundleDir;
 };

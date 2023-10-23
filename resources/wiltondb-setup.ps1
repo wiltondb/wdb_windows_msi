@@ -87,13 +87,18 @@ $OpensslExe = Join-Path -Path $BinDir -ChildPath "openssl.exe"
 $OpensslCnf = Join-Path -Path $ShareDir -ChildPath "openssl.cnf"
 $ServerCrt = Join-Path -Path $DataDir -ChildPath "server.crt"
 $ServerKey = Join-Path -Path $DataDir -ChildPath "server.key"
-$F01AlterSystemCreateDbSql = Join-Path -Path $ScriptDir -ChildPath "01_alter_system_create_db.sql"
-$F02CreateExtension = Join-Path -Path $ScriptDir -ChildPath "02_create_extension.sql"
+$F01Sql = Join-Path -Path $ScriptDir -ChildPath "wiltondb-setup-01.sql"
+$F02Sql = Join-Path -Path $ScriptDir -ChildPath "wiltondb-setup-02.sql"
 
 $PgCtlWasStarted = $False
 
+if (Test-Path -Path $DataDir) {
+  Write-EventLogWilton -EntryType "Warning" -Message ("DB cluster directory already exists on path: $DataDir, skipping initialization." +
+    " In case of problems please rename this directory and re-run the installer.")
+  exit 0
+}
+
 try {
-  # todo: optional initdb, write and check version file
   New-DirWilton -Dir $DataDir
   Invoke-CommandWilton -Exe $InitdbExe -Args @("-D", $DataDir, "-U", "postgres", "-E", "UTF8", "--no-locale", "--no-instructions")
   Invoke-CommandWilton -Exe $OpensslExe -Args @("req", "-config", $OpensslCnf, "-new", "-x509", "-days", "3650",
@@ -101,9 +106,9 @@ try {
   New-DirWilton -Dir $LogDir
   Invoke-CommandWilton -Exe $PgctlExe -Args @("start", "-D", $DataDir) -NoRedirect
   $PgCtlWasStarted = $True
-  Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "postgres", "-f", $F01AlterSystemCreateDbSql)
+  Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "postgres", "-a", "-f", $F01Sql)
   Invoke-CommandWilton -Exe $PgctlExe -Args @("restart", "-D", $DataDir) -NoRedirect
-  Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "wilton", "-f", $F02CreateExtension)
+  Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "wilton", "-a", "-f", $F02Sql)
   Invoke-CommandWilton -Exe $PgctlExe -Args @("stop", "-D", $DataDir) -NoRedirect
   Update-HbaConfWilton -DataDir $DataDir
   Invoke-CommandWilton -Exe "icacls.exe" -Args @($DataDir, "/grant", "*S-1-5-19:(OI)(CI)F", "/t", "/q")

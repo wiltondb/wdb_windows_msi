@@ -9,7 +9,7 @@ export default {
         Value: "&quot;[System64Folder]WindowsPowerShell\\v1.0\\powershell.exe&quot;" +
           " -NoLogo -NoProfile -NonInteractive" +
           " -ExecutionPolicy Bypass" +
-          " -File &quot;[INSTALLDIR]share\\installer\\create_cluster.ps1&quot;" +
+          " -File &quot;[INSTALLDIR]share\\installer\\wiltondb-setup.ps1&quot;" +
           " &quot;[INSTALLDIR]&quot;"
       },
     }, {
