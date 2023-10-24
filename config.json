@@ -4,10 +4,18 @@
   "msiFileName": "wiltondb3.3",
   "featureName": "wiltondb",
   "serviceName": "wiltondb3.3",
-  "serviceDisplayName": "Wilton DB",
-  "serviceDescription": "Wilton DB",
+  "serviceDisplayName": "WiltonDB",
+  "serviceDescription": "WiltonDB",
   "helpLink": "https://wiltondb.com",
   "manufacturer": "WiltonDB Software",
   "productName": "Wilton DB",
-  "upgradeCode": "e77fdb8f-d9a8-4418-8f59-25f94678ba75"
+  "upgradeCode": "e77fdb8f-d9a8-4418-8f59-25f94678ba75",
+  "codesign": {
+    "enabled": true,
+    "signToolPath": "C:/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x64/signtool.exe",
+    "commonName": "WiltonDB Software",
+    "timestampUrl": "http://timestamp.sectigo.com",
+    "hashAlg": "SHA384",
+    "description": "WiltonDB"
+  }
 }
