@@ -24,7 +24,7 @@ export default () => {
   }, {
     _attributes: {
       Id: "WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT",
-      Value: "Launch WiltonDB Configuration Tool",
+      Value: "Open WiltonDB Configuration Tool",
     },
   }, {
     _attributes: {
