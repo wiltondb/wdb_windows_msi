@@ -1,14 +1,14 @@
 {
-  "version": "2.4.0",
+  "version": "2.4.1",
   "directoryName": "wiltondb3.3",
   "msiFileName": "wiltondb3.3",
   "featureName": "wiltondb",
   "serviceName": "wiltondb3.3",
   "serviceDisplayName": "WiltonDB",
-  "serviceDescription": "WiltonDB",
+  "serviceDescription": "RDBMS that can work with applications written for Microsoft SQL Server",
   "helpLink": "https://wiltondb.com",
   "manufacturer": "WiltonDB Software",
-  "productName": "Wilton DB",
+  "productName": "WiltonDB",
   "upgradeCode": "e77fdb8f-d9a8-4418-8f59-25f94678ba75",
   "codesign": {
     "enabled": true,
