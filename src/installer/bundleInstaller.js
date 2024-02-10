@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-import { path } from "../deps.js";
+import { fs, path } from "../deps.js";
 
-export default async (wixDir, descriptor) => {
+export default async (descriptor) => {
   console.log("Bundling installer ...");
+
+  const wixDir = Deno.env.get("WIX");
+  if (null == wixDir) {
+    throw new Error(
+      "'WIX' environemnt variable must be set to WiX Toolset directory",
+    );
+  }
+  if (!(await fs.exists(wixDir))) {
+    throw new Error(`Invalid Wix directory specified, path: [${wixDir}]`);
+  }
+
   const name = descriptor.substring(0, descriptor.length - 4);
   const filePath = path.fromFileUrl(import.meta.url);
   const rootDir = path.dirname(path.dirname(path.dirname(filePath)));

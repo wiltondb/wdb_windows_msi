@@ -1,10 +1,26 @@
 
 param (
-  [Parameter(Mandatory=$True)][string]$InstallDir
+  [Parameter(Mandatory=$True)][string]$InstallDir,
+  [Parameter(Mandatory=$True)][string]$DataDir,
+  [Parameter(Mandatory=$False)][switch]$UpdateHbaConf = $True,
+  [Parameter(Mandatory=$False)][switch]$GrantLocalService = $False
 )
+
 
 $ErrorActionPreference = "Stop"
 #Set-PSDebug -Trace 1
+
+function Edit-StringUnquoteWilton {
+  param (
+    [Parameter(Mandatory=$True)][string]$Str
+  )
+  while (($Str.Length -gt 1) -And 
+    ((("`"" -eq $Str.Substring(0, 1)) -And ("`"" -eq $Str.Substring($Str.Length - 1, 1))) -Or 
+      (("'" -eq $Str.Substring(0, 1)) -And ("'" -eq $Str.Substring($Str.Length - 1, 1))))) {
+    $Str = $Str.Substring(1, $Str.Length - 2)
+  }
+  return $Str
+}
 
 function New-DirWilton {
   param (
@@ -74,9 +90,10 @@ function Update-HbaConfWilton {
 }
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$InstallDir = $InstallDir -Replace "`"", ""
+$InstallDir = Edit-StringUnquoteWilton -Str $InstallDir
+$DataDir = Edit-StringUnquoteWilton -Str $DataDir
+
 $BinDir = Join-Path -Path $InstallDir -ChildPath "bin"
-$DataDir = Join-Path -Path $InstallDir -ChildPath "data"
 $LogDir = Join-Path -Path $DataDir -ChildPath "log"
 $ShareDir = Join-Path -Path $InstallDir -ChildPath "share"
 
@@ -92,8 +109,8 @@ $F02Sql = Join-Path -Path $ScriptDir -ChildPath "wiltondb-setup-02.sql"
 
 $PgCtlWasStarted = $False
 
-if (Test-Path -Path $DataDir) {
-  Write-EventLogWilton -EntryType "Warning" -Message ("DB cluster directory already exists on path: $DataDir, skipping initialization." +
+if ((Test-Path -Path $DataDir) -And ((Get-ChildItem -Path $DataDir | Measure-Object).Count -gt 0)) {
+  Write-EventLogWilton -EntryType "Warning" -Message ("Non-empty DB cluster directory already exists on path: $DataDir, skipping initialization." +
     " In case of problems please rename this directory and re-run the installer.")
   exit 0
 }
@@ -110,8 +127,12 @@ try {
   Invoke-CommandWilton -Exe $PgctlExe -Args @("restart", "-D", $DataDir) -NoRedirect
   Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "wilton", "-a", "-f", $F02Sql)
   Invoke-CommandWilton -Exe $PgctlExe -Args @("stop", "-D", $DataDir) -NoRedirect
-  Update-HbaConfWilton -DataDir $DataDir
-  Invoke-CommandWilton -Exe "icacls.exe" -Args @($DataDir, "/grant", "*S-1-5-19:(OI)(CI)F", "/t", "/q")
+  if ($UpdateHbaConf) {
+    Update-HbaConfWilton -DataDir $DataDir
+  }
+  if ($GrantLocalService) {
+    Invoke-CommandWilton -Exe "icacls.exe" -Args @($DataDir, "/grant", "*S-1-5-19:(OI)(CI)F", "/t", "/q")
+  }
   exit 0
 } catch {
   Write-EventLogWilton -EntryType "Error" -Message $_

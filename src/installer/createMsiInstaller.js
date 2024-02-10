@@ -17,6 +17,7 @@
 import { fs } from "../deps.js";
 import conf from "../conf.js";
 import bundleInstaller from "./bundleInstaller.js";
+import bundleZip from "./bundleZip.js";
 import copyDist from "./copyDist.js";
 import prepareWorkDir from "./prepareWorkDir.js";
 import signDist from "./signDist.js";
@@ -26,15 +27,6 @@ import writeDescriptor from "./writeDescriptor.js";
 export default async (distDir) => {
   if (!(await fs.exists(distDir))) {
     throw new Error(`Invalid dist directory specified, path: [${distDir}]`);
-  }
-  const wixDir = Deno.env.get("WIX");
-  if (null == wixDir) {
-    throw new Error(
-      "'WIX' environemnt variable must be set to WiX Toolset directory",
-    );
-  }
-  if (!(await fs.exists(wixDir))) {
-    throw new Error(`Invalid Wix directory specified, path: [${wixDir}]`);
   }
 
   // prepare work dir
@@ -48,11 +40,14 @@ export default async (distDir) => {
     await signDist(bundleDir);
   }
 
+  // create zip
+  await bundleZip(bundleDir); 
+
   // create descriptor
   const descriptor = await writeDescriptor(workDir, bundleDir);
 
   // run wix
-  const inst = await bundleInstaller(wixDir, descriptor);
+  const inst = await bundleInstaller(descriptor);
 
   // sign installer
   if (conf.codesign.enabled) {

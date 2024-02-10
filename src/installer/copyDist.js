@@ -23,7 +23,10 @@ export default async (distDir, workDir) => {
   const filePath = path.fromFileUrl(import.meta.url);
   const rootDir = path.dirname(path.dirname(path.dirname(filePath)));
   const resourcesDir = path.join(rootDir, "resources")
-  const bundleDir = path.join(workDir, "dist");
+  const bundleDir = path.join(
+    workDir,
+    `${conf.msiFileName}_${conf.version}`,
+  );
   await fs.emptyDir(bundleDir);
 
   const join = path.join;
