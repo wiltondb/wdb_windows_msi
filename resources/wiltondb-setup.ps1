@@ -1,11 +1,36 @@
+#
+# Copyright 2024, WiltonDB Software
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 param (
-  [Parameter(Mandatory=$True)][string]$InstallDir,
   [Parameter(Mandatory=$True)][string]$DataDir,
+  [Parameter(Mandatory=$False)][string]$InstallDir = "",
+  [Parameter(Mandatory=$False)][string]$Locale = "C",
+  [Parameter(Mandatory=$False)][switch]$EnableLoggingCollector = $True,
+  [Parameter(Mandatory=$False)][int]$PostgresPort = 5432,
+  [Parameter(Mandatory=$False)][int]$TdsPort = 1433,
+  [Parameter(Mandatory=$False)][int]$MaxConnections = 256,
+  [Parameter(Mandatory=$False)][switch]$EnableSSL = $False,
+  [Parameter(Mandatory=$False)][string]$UserName = "wilton",
+  [Parameter(Mandatory=$False)][string]$UserPassword = "wilton",
+  [Parameter(Mandatory=$False)][string]$DatabaseName = "wilton",
+  [Parameter(Mandatory=$False)][string]$MigrationMode = "multi-db",
   [Parameter(Mandatory=$False)][switch]$UpdateHbaConf = $True,
-  [Parameter(Mandatory=$False)][switch]$GrantLocalService = $False
+  [Parameter(Mandatory=$False)][switch]$GrantLocalService = $False,
+  [Parameter(Mandatory=$False)][switch]$EnableEventLog = $False
 )
-
 
 $ErrorActionPreference = "Stop"
 #Set-PSDebug -Trace 1
@@ -22,6 +47,17 @@ function Edit-StringUnquoteWilton {
   return $Str
 }
 
+function Convert-SwitchWilton {
+  param (
+    [Parameter(Mandatory=$True)][bool]$Switch
+  )
+  if ($Switch) {
+    return "ON"
+  } else {
+    return "OFF"
+  }
+}
+
 function New-DirWilton {
   param (
     [Parameter(Mandatory=$True)][string]$Dir
@@ -36,8 +72,10 @@ function Write-EventLogWilton {
     [Parameter(Mandatory=$True)][string]$Message,
     [Parameter(Mandatory=$True)][string]$EntryType
   )
-  # https://stackoverflow.com/q/41813955
-  Write-EventLog -LogName "Application" -Source "MsiInstaller" -EventId 1013 -EntryType $EntryType -Message "WiltonDB: $Message"
+  if ($EnableEventLog) {
+    # https://stackoverflow.com/q/41813955
+    Write-EventLog -LogName "Application" -Source "MsiInstaller" -EventId 1013 -EntryType $EntryType -Message "WiltonDB: $Message"
+  }
 }
 
 function Invoke-CommandWilton {
@@ -89,8 +127,12 @@ function Update-HbaConfWilton {
   Write-Host "Updated $PgHbaConf"
 }
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$InstallDir = Edit-StringUnquoteWilton -Str $InstallDir
+$ScriptDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+if (0 -eq $InstallDir.Length) {
+  $InstallDir = Split-Path -Path (Split-Path -Path $ScriptDir -Parent) -Parent
+} else {
+  $InstallDir = Resolve-Path -Path (Edit-StringUnquoteWilton -Str $InstallDir)
+}
 $DataDir = Edit-StringUnquoteWilton -Str $DataDir
 
 $BinDir = Join-Path -Path $InstallDir -ChildPath "bin"
@@ -110,22 +152,43 @@ $F02Sql = Join-Path -Path $ScriptDir -ChildPath "wiltondb-setup-02.sql"
 $PgCtlWasStarted = $False
 
 if ((Test-Path -Path $DataDir) -And ((Get-ChildItem -Path $DataDir | Measure-Object).Count -gt 0)) {
-  Write-EventLogWilton -EntryType "Warning" -Message ("Non-empty DB cluster directory already exists on path: $DataDir, skipping initialization." +
+  $Msg = ("Non-empty DB cluster directory already exists on path: $DataDir, skipping initialization." +
     " In case of problems please rename this directory and re-run the installer.")
+  Write-EventLogWilton -EntryType "Warning" -Message $Msg
+  Write-Host $Msg
   exit 0
 }
 
 try {
   New-DirWilton -Dir $DataDir
-  Invoke-CommandWilton -Exe $InitdbExe -Args @("-D", $DataDir, "-U", "postgres", "-E", "UTF8", "--no-locale", "--no-instructions")
-  Invoke-CommandWilton -Exe $OpensslExe -Args @("req", "-config", $OpensslCnf, "-new", "-x509", "-days", "3650",
-    "-noenc", "-text", "-batch", "-out", $ServerCrt, "-keyout", $ServerKey, "-subj", "/CN=localhost")
+  Invoke-CommandWilton -Exe $InitdbExe -Args @("-D", $DataDir, "-U", "postgres", "-E", "UTF8", "--locale=$Locale", "--no-instructions")
+  if ($EnableSSL) {
+    Invoke-CommandWilton -Exe $OpensslExe -Args @("req", "-config", $OpensslCnf, "-new", "-x509", "-days", "3650",
+      "-noenc", "-text", "-batch", "-out", $ServerCrt, "-keyout", $ServerKey, "-subj", "/CN=localhost")
+  }
   New-DirWilton -Dir $LogDir
-  Invoke-CommandWilton -Exe $PgctlExe -Args @("start", "-D", $DataDir) -NoRedirect
+  Invoke-CommandWilton -Exe $PgctlExe -Args @("-o", "`"-p $PostgresPort`"", "start", "-D", $DataDir) -NoRedirect
   $PgCtlWasStarted = $True
-  Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "postgres", "-a", "-f", $F01Sql)
+  Invoke-CommandWilton -Exe $PsqlExe -Args @("-p", $PostgresPort, "-U", "postgres", "-d", "postgres", "-a", "-f", $F01Sql,
+    "-v", "enable_logging_collector=$(Convert-SwitchWilton -Switch $EnableLoggingCollector)",
+    "-v", "postgres_port=$PostgresPort",
+    "-v", "max_connections=$MaxConnections",
+    "-v", "enable_ssl=$(Convert-SwitchWilton -Switch $EnableSSL)",
+    "-v", "username=$UserName",
+    "-v", "username_quoted='$UserName'",
+    "-v", "user_password='$UserPassword'",
+    "-v", "dbname=$DatabaseName",
+    "-v", "dbname_quoted='$DatabaseName'"
+  )
   Invoke-CommandWilton -Exe $PgctlExe -Args @("restart", "-D", $DataDir) -NoRedirect
-  Invoke-CommandWilton -Exe $PsqlExe -Args @("-U", "postgres", "-d", "wilton", "-a", "-f", $F02Sql)
+  Invoke-CommandWilton -Exe $PsqlExe -Args @("-p", $PostgresPort, "-U", "postgres", "-d", $DatabaseName, "-a", "-f", $F02Sql,
+    "-v", "username=$UserName",
+    "-v", "username_quoted='$UserName'",
+    "-v", "tds_port=$TdsPort",
+    "-v", "dbname=$DatabaseName",
+    "-v", "dbname_quoted='$DatabaseName'",
+    "-v", "migration_mode='$MigrationMode'"
+  )
   Invoke-CommandWilton -Exe $PgctlExe -Args @("stop", "-D", $DataDir) -NoRedirect
   if ($UpdateHbaConf) {
     Update-HbaConfWilton -DataDir $DataDir
@@ -133,6 +196,7 @@ try {
   if ($GrantLocalService) {
     Invoke-CommandWilton -Exe "icacls.exe" -Args @($DataDir, "/grant", "*S-1-5-19:(OI)(CI)F", "/t", "/q")
   }
+  Write-Host "Setup complete, use '`"$InstallDir\bin\pg_ctl.exe`" start -D `"$(Resolve-Path -Path $DataDir)`"' to start the server."
   exit 0
 } catch {
   Write-EventLogWilton -EntryType "Error" -Message $_

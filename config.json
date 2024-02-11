@@ -10,6 +10,7 @@
   "manufacturer": "WiltonDB Software",
   "productName": "WiltonDB 3.3",
   "upgradeCode": "e77fdb8f-d9a8-4418-8f59-25f94678ba75",
+  "zipBundleCompressionLevel": 0,
   "codesign": {
     "enabled": false,
     "signToolPath": "C:/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x64/signtool.exe",

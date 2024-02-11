@@ -26,9 +26,10 @@ export default {
           " -NoLogo -NoProfile -NonInteractive" +
           " -ExecutionPolicy Bypass" +
           " -File &quot;[INSTALLDIR]share\\installer\\wiltondb-setup.ps1&quot;" +
-          " -InstallDir &quot;'[INSTALLDIR]'&quot;" +
           " -DataDir &quot;'[INSTALLDIR]data'&quot;" +
-          " -GrantLocalService"
+          " -EnableSSL" +
+          " -GrantLocalService" +
+          " -EnableEventLog"
       },
     }, {
       _attributes: {

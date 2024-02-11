@@ -15,6 +15,7 @@
  */
 
 import { fs, path } from "../deps.js";
+import conf from "../conf.js";
 
 export default async (bundleDir) => {
   console.log("Bundling dist ZIP ...");
@@ -37,8 +38,8 @@ export default async (bundleDir) => {
       path.join(sevenZipDir, "7z.exe"),
       "a",
       "-tzip",
-      "-mx9",
-      //"-bd",
+      `-mx${conf.zipBundleCompressionLevel}`,
+      "-bd",
       `${bundleName}.zip`,
       bundleName,
     ],
