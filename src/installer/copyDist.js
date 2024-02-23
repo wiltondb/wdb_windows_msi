@@ -40,6 +40,7 @@ export default async (distDir, workDir) => {
   await fs.copy(join(resourcesDir, "wiltondb-setup.ps1"), join(installerDir, "wiltondb-setup.ps1"));
   await fs.copy(join(resourcesDir, "wiltondb-setup-01.sql"), join(installerDir, "wiltondb-setup-01.sql"));
   await fs.copy(join(resourcesDir, "wiltondb-setup-02.sql"), join(installerDir, "wiltondb-setup-02.sql"));
+  await fs.copy(join(resourcesDir, "sybdb_license.txt"), join(installerDir, "sybdb_license.txt"));
 
   return bundleDir;
 };
