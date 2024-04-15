@@ -52,6 +52,19 @@ async function sign(filePath) {
   return { stdout, stderr };
 }
 
+async function signWithRetry(filePath, maxAttempts) {
+  let attempts = maxAttempts;
+  while (attempts > 0) {
+    try {
+      return await sign(filePath);
+    } catch(e) {
+      attempts -= 1;
+      console.log(e.message);
+      console.log(`Remaining attempts: [${attempts}]`);
+    }
+  }
+}
+
 async function verify(filePath) {
   const process = Deno.run({
     cmd: [ 
@@ -80,7 +93,7 @@ async function verify(filePath) {
 
 export default async (filePath) => {
   const sha256Unsigned = await fileSha256(filePath);
-  const { stdout, stderr } = await sign(filePath);
+  const { stdout, stderr } = await signWithRetry(filePath, 10);
   await verify(filePath);
   const sha256Signed = await fileSha256(filePath);
   if (sha256Unsigned === sha256Signed) {
