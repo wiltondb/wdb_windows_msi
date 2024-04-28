@@ -19,6 +19,8 @@ param (
   [Parameter(Mandatory=$False)][string]$InstallDir = "",
   [Parameter(Mandatory=$False)][string]$Locale = "C",
   [Parameter(Mandatory=$False)][switch]$EnableLoggingCollector = $True,
+  [Parameter(Mandatory=$False)][string]$LogDirectory = "log",
+  [Parameter(Mandatory=$False)][string]$LogFileName = "postgresql-%a.log",
   [Parameter(Mandatory=$False)][int]$PostgresPort = 5432,
   [Parameter(Mandatory=$False)][int]$TdsPort = 1433,
   [Parameter(Mandatory=$False)][int]$MaxConnections = 256,
@@ -171,6 +173,8 @@ try {
   $PgCtlWasStarted = $True
   Invoke-CommandWilton -Exe $PsqlExe -Args @("-p", $PostgresPort, "-U", "postgres", "-d", "postgres", "-a", "-f", $F01Sql,
     "-v", "enable_logging_collector=$(Convert-SwitchWilton -Switch $EnableLoggingCollector)",
+    "-v", "log_directory='$LogDirectory'",
+    "-v", "log_filename='$LogFileName'",
     "-v", "postgres_port=$PostgresPort",
     "-v", "max_connections=$MaxConnections",
     "-v", "enable_ssl=$(Convert-SwitchWilton -Switch $EnableSSL)",

@@ -1,8 +1,9 @@
 
 ALTER SYSTEM SET logging_collector = :enable_logging_collector;
-ALTER SYSTEM SET log_directory = 'log';
-ALTER SYSTEM SET log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log';
+ALTER SYSTEM SET log_directory = :log_directory;
+ALTER SYSTEM SET log_filename = :log_filename;
 ALTER SYSTEM SET log_rotation_age = '1d';
+ALTER SYSTEM SET log_truncate_on_rotation = 'on';
 
 ALTER SYSTEM SET port = :postgres_port;
 ALTER SYSTEM SET max_connections = :max_connections;
