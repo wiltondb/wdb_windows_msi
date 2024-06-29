@@ -1,5 +1,5 @@
 {
-  "version": "8.13.0",
+  "version": "8.13.1",
   "directoryName": "wiltondb3.3",
   "msiFileName": "wiltondb3.3",
   "featureName": "wiltondb",
@@ -19,4 +19,4 @@
     "hashAlg": "SHA384",
     "description": "WiltonDB"
   }
-}
+}   
