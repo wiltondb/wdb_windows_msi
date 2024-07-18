@@ -19,11 +19,15 @@ import conf from "../conf.js";
 import createDeclaration from "../descriptor/createDeclaration.js";
 import createWix from "../descriptor/createWix.js";
 
-export default async (workDir, distDir) => {
+export default async (workDir, distDir, debug=false) => {
   console.log("Creating installer descriptor ...");
+  let descPrefix = conf.msiFileName;
+  if (debug) {
+    descPrefix = `${descPrefix}_debug`;
+  }
   const descPath = path.join(
     workDir,
-    `${conf.msiFileName}_${conf.version}.wxs`,
+    `${descPrefix}_${conf.version}.wxs`,
   );
 
   // create elements

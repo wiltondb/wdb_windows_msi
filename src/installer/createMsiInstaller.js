@@ -16,9 +16,11 @@
 
 import { fs } from "../deps.js";
 import conf from "../conf.js";
+import bundleDebugInfo from "./bundleDebugInfo.js";
 import bundleInstaller from "./bundleInstaller.js";
 import bundleZip from "./bundleZip.js";
 import copyDist from "./copyDist.js";
+import copySymbols from "./copySymbols.js";
 import prepareWorkDir from "./prepareWorkDir.js";
 import signDist from "./signDist.js";
 import signFile from "./signFile.js";
@@ -43,16 +45,25 @@ export default async (distDir) => {
   // create zip
   await bundleZip(bundleDir); 
 
-  // create descriptor
+  // create installer
   const descriptor = await writeDescriptor(workDir, bundleDir);
-
-  // run wix
   const inst = await bundleInstaller(descriptor);
-
-  // sign installer
   if (conf.codesign.enabled) {
     await signFile(inst);
   }
 
-  console.log(`Installer created successfully, path: [${inst}]`);
+  // copy symbols
+  await copySymbols(distDir, bundleDir);
+
+  // create debug installer
+  const debugDescriptor = await writeDescriptor(workDir, bundleDir, true);
+  const debugInst = await bundleInstaller(debugDescriptor, true);
+  if (conf.codesign.enabled) {
+    await signFile(debugInst);
+  }
+
+  // create debuginfo bundle
+  await bundleDebugInfo(bundleDir);
+
+  console.log(`Installer created successfully`);
 };
