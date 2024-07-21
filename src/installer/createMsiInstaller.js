@@ -57,7 +57,7 @@ export default async (distDir) => {
 
   // create debug installer
   const debugDescriptor = await writeDescriptor(workDir, bundleDir, true);
-  const debugInst = await bundleInstaller(debugDescriptor, true);
+  const debugInst = await bundleInstaller(debugDescriptor);
   if (conf.codesign.enabled) {
     await signFile(debugInst);
   }

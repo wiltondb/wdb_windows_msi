@@ -16,7 +16,7 @@
 
 import { fs, path } from "../deps.js";
 
-export default async (descriptor, debug=false) => {
+export default async (descriptor) => {
   console.log("Bundling installer ...");
 
   const wixDir = Deno.env.get("WIX");
@@ -30,9 +30,6 @@ export default async (descriptor, debug=false) => {
   }
 
   let name = descriptor.substring(0, descriptor.length - 4);
-  if (debug) {
-    name = `${name}_debug`;
-  }
   const filePath = path.fromFileUrl(import.meta.url);
   const rootDir = path.dirname(path.dirname(path.dirname(filePath)));
 
